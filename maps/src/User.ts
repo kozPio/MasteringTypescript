@@ -1,12 +1,14 @@
 import faker from 'faker';
+import  {Marker} from './CustomMap';
 
-
-export class User {
+export class User implements Marker {
   name: string;
   location: {
     lat: number;
     lng: number;
   };
+  color: string ='orange';
+  
 
   constructor() {
     this.name = faker.name.firstName();
@@ -14,5 +16,9 @@ export class User {
       lat: parseFloat(faker.address.latitude()),
       lng: parseFloat(faker.address.longitude())
     }
+  }
+
+  markerContent(): string {
+    return `User ${this.name} is married`
   }
 }

@@ -136886,12 +136886,17 @@ var faker_1 = __importDefault(require("faker"));
 
 var User = function () {
   function User() {
+    this.color = 'orange';
     this.name = faker_1.default.name.firstName();
     this.location = {
       lat: parseFloat(faker_1.default.address.latitude()),
       lng: parseFloat(faker_1.default.address.longitude())
     };
   }
+
+  User.prototype.markerContent = function () {
+    return "User " + this.name + " is married";
+  };
 
   return User;
 }();
@@ -136915,6 +136920,7 @@ var faker_1 = __importDefault(require("faker"));
 
 var Company = function () {
   function Company() {
+    this.color = 'red';
     this.companyName = faker_1.default.company.companyName();
     this.catchPhrase = faker_1.default.company.catchPhrase();
     this.location = {
@@ -136922,6 +136928,10 @@ var Company = function () {
       lng: parseFloat(faker_1.default.address.longitude())
     };
   }
+
+  Company.prototype.markerContent = function () {
+    return "\n    <div>\n    <h1><b>Company " + this.companyName + "</b></h1>\n    <h3>is on the market since 11981 and has profits way too enormus to be a small company!</h3> \n    <h3>Their CatchPhrse is " + this.catchPhrase + " </h3>\n    </div>\n    ";
+  };
 
   return Company;
 }();
@@ -136959,7 +136969,7 @@ var CustomMap = function () {
     });
     marker.addListener('click', function () {
       var infoWindow = new google.maps.InfoWindow({
-        content: 'Hi there?'
+        content: mappable.markerContent()
       });
       infoWindow.open(_this.googleMap, marker);
     });
@@ -137015,7 +137025,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55710" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63490" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
