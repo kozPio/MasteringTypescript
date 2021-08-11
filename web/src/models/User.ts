@@ -1,21 +1,29 @@
-interface UserData {
+
+import { Model } from './Model';
+import {Atributes} from './Atributes';
+import { ApiSync } from "./ApiSync";
+import {Eventing} from './Eventing';
+
+
+export interface UserData {
+  id?: number;
   name?: String;
   age?: number
+  
 }
 
 
-export class User {
+const rootUrl = 'http://localhost:3000/users';
 
-  constructor(private data: UserData) {}
-
-
-  get(propName: string): (number | string) {
-    return this.data[propName]
+export class User extends Model<UserData> {
+  
+  static buildUser(attrs: UserData): User {
+    return new User(
+      new Atributes<UserData>(attrs),
+      new Eventing(),
+      new ApiSync<UserData>(rootUrl)
+    );
   }
 
-
-  set(update: UserData): void {
-    Object.assign(this.data, update);
-  }
 }
 
