@@ -28,17 +28,14 @@ export class Model<T extends HasId> {
     private sync: Sync<T>
     ){}
 
-    get on() {
-      return this.events.on;
-    };
+    
+
+    on = this.events.on;
+    trigger = this.events.trigger;
+    get = this.atributes.get;
+   
   
-    get trigeger() {
-      return this.events.trigger;
-    };
-  
-    get get(){
-      return this.atributes.get
-    };
+    
   
     set(update: T): void {
       this.atributes.set(update);
@@ -60,10 +57,10 @@ export class Model<T extends HasId> {
     save(): void {
       this.sync.save(this.atributes.getAll())
       .then((response: AxiosResponse): void => {
-        this.trigeger('save');
+        this.trigger('save');
       })
       .catch(() => {
-        this.trigeger('error');
+        this.trigger('error');
       })
     }
 }

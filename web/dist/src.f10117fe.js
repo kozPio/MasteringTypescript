@@ -117,7 +117,68 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"src/models/Model.ts":[function(require,module,exports) {
+})({"src/views/UserForm.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.UserForm = void 0;
+
+var UserForm = function () {
+  function UserForm(parent, model) {
+    var _this = this;
+
+    this.parent = parent;
+    this.model = model;
+
+    this.onSetAgeClick = function () {
+      console.log('button was clicked');
+
+      _this.model.setRandomAge();
+    };
+  }
+
+  UserForm.prototype.eventsMap = function () {
+    return {
+      'click:.set-age': this.onSetAgeClick
+    };
+  };
+
+  UserForm.prototype.template = function () {
+    return "\n      <div>\n          <h1>Form me</h1>\n          <div>User name: " + this.model.get('name') + "</div>\n          <div>User age: " + this.model.get('age') + "</div>\n          <input />\n          <button>Click Me</button>\n          <button class=\"set-age\">set random age</button>\n      </div>";
+  };
+
+  UserForm.prototype.bindEvents = function (fragment) {
+    var eventsMap = this.eventsMap();
+
+    var _loop_1 = function _loop_1(eventKey) {
+      var _a = eventKey.split(':'),
+          eventName = _a[0],
+          selector = _a[1];
+
+      fragment.querySelectorAll(selector).forEach(function (element) {
+        element.addEventListener(eventName, eventsMap[eventKey]);
+      });
+    };
+
+    for (var eventKey in eventsMap) {
+      _loop_1(eventKey);
+    }
+  };
+
+  UserForm.prototype.render = function () {
+    var templateElement = document.createElement('template');
+    templateElement.innerHTML = this.template();
+    this.bindEvents(templateElement.content);
+    this.parent.append(templateElement.content);
+  };
+
+  return UserForm;
+}();
+
+exports.UserForm = UserForm;
+},{}],"src/models/Model.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -130,32 +191,10 @@ var Model = function () {
     this.atributes = atributes;
     this.events = events;
     this.sync = sync;
+    this.on = this.events.on;
+    this.trigger = this.events.trigger;
+    this.get = this.atributes.get;
   }
-
-  Object.defineProperty(Model.prototype, "on", {
-    get: function get() {
-      return this.events.on;
-    },
-    enumerable: false,
-    configurable: true
-  });
-  ;
-  Object.defineProperty(Model.prototype, "trigeger", {
-    get: function get() {
-      return this.events.trigger;
-    },
-    enumerable: false,
-    configurable: true
-  });
-  ;
-  Object.defineProperty(Model.prototype, "get", {
-    get: function get() {
-      return this.atributes.get;
-    },
-    enumerable: false,
-    configurable: true
-  });
-  ;
 
   Model.prototype.set = function (update) {
     this.atributes.set(update);
@@ -180,9 +219,9 @@ var Model = function () {
     var _this = this;
 
     this.sync.save(this.atributes.getAll()).then(function (response) {
-      _this.trigeger('save');
+      _this.trigger('save');
     }).catch(function () {
-      _this.trigeger('error');
+      _this.trigger('error');
     });
   };
 
@@ -2098,7 +2137,64 @@ var Eventing = function () {
 }();
 
 exports.Eventing = Eventing;
-},{}],"src/models/User.ts":[function(require,module,exports) {
+},{}],"src/models/Collection.ts":[function(require,module,exports) {
+"use strict";
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Collection = void 0;
+
+var axios_1 = __importDefault(require("axios"));
+
+var Eventing_1 = require("./Eventing");
+
+var Collection = function () {
+  function Collection(rootUrl, desirialize) {
+    this.rootUrl = rootUrl;
+    this.desirialize = desirialize;
+    this.models = [];
+    this.events = new Eventing_1.Eventing();
+  }
+
+  Object.defineProperty(Collection.prototype, "on", {
+    get: function get() {
+      return this.events.on;
+    },
+    enumerable: false,
+    configurable: true
+  });
+  Object.defineProperty(Collection.prototype, "trigger", {
+    get: function get() {
+      return this.events.trigger;
+    },
+    enumerable: false,
+    configurable: true
+  });
+
+  Collection.prototype.fetch = function () {
+    var _this = this;
+
+    axios_1.default.get(this.rootUrl).then(function (response) {
+      response.data.forEach(function (value) {
+        _this.models.push(_this.desirialize(value));
+      });
+
+      _this.trigger('change');
+    });
+  };
+
+  return Collection;
+}();
+
+exports.Collection = Collection;
+},{"axios":"node_modules/axios/index.js","./Eventing":"src/models/Eventing.ts"}],"src/models/User.ts":[function(require,module,exports) {
 "use strict";
 
 var __extends = this && this.__extends || function () {
@@ -2142,6 +2238,8 @@ var ApiSync_1 = require("./ApiSync");
 
 var Eventing_1 = require("./Eventing");
 
+var Collection_1 = require("./Collection");
+
 var rootUrl = 'http://localhost:3000/users';
 
 var User = function (_super) {
@@ -2151,30 +2249,44 @@ var User = function (_super) {
     return _super !== null && _super.apply(this, arguments) || this;
   }
 
+  User.buildUserCollection = function () {
+    return new Collection_1.Collection(rootUrl, function (json) {
+      return User.buildUser(json);
+    });
+  };
+
   User.buildUser = function (attrs) {
     return new User(new Atributes_1.Atributes(attrs), new Eventing_1.Eventing(), new ApiSync_1.ApiSync(rootUrl));
+  };
+
+  User.prototype.setRandomAge = function () {
+    var age = Math.round(Math.random() * 100);
+    this.set({
+      age: age
+    });
   };
 
   return User;
 }(Model_1.Model);
 
 exports.User = User;
-},{"./Model":"src/models/Model.ts","./Atributes":"src/models/Atributes.ts","./ApiSync":"src/models/ApiSync.ts","./Eventing":"src/models/Eventing.ts"}],"src/index.ts":[function(require,module,exports) {
+},{"./Model":"src/models/Model.ts","./Atributes":"src/models/Atributes.ts","./ApiSync":"src/models/ApiSync.ts","./Eventing":"src/models/Eventing.ts","./Collection":"src/models/Collection.ts"}],"src/index.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var UserForm_1 = require("./views/UserForm");
+
 var User_1 = require("./models/User");
 
 var user = User_1.User.buildUser({
-  id: 1
+  name: 'Adam',
+  age: 20
 });
-user.on('change', function () {
-  console.log(user);
-});
-user.fetch(); // const user = new User({name: 'John', age: 20});
+var userForm = new UserForm_1.UserForm(document.getElementById('root'), user);
+userForm.render(); // const user = new User({name: 'John', age: 20});
 // user.set({ name: 'Adrian'})
 // user.on('change', () => {
 //   console.log('change1')
@@ -2186,7 +2298,7 @@ user.fetch(); // const user = new User({name: 'John', age: 20});
 //   console.log('save was triggered')
 // });
 // user.trigger('asd');
-},{"./models/User":"src/models/User.ts"}],"C:/Users/pitrx/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./views/UserForm":"src/views/UserForm.ts","./models/User":"src/models/User.ts"}],"C:/Users/pitrx/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -2214,7 +2326,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52896" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52522" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

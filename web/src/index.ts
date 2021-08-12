@@ -1,16 +1,12 @@
-import { User } from "./models/User";
+import { UserForm } from './views/UserForm';
+import { User } from './models/User';
 
 
+const user = User.buildUser({name: 'Adam', age: 20})
 
-const user = User.buildUser({id: 1});
+const userForm = new UserForm(document.getElementById('root'), user);
 
-
-
-user.on('change', ()=>{
-  console.log(user);
-})
-
-user.fetch();
+userForm.render();
 
 
 
