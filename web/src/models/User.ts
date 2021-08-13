@@ -38,5 +38,7 @@ export class User extends Model<UserData> {
     this.set({age});
   }
 
+  
+
 }
 
