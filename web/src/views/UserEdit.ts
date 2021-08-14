@@ -19,7 +19,7 @@ export class UserEdit extends View<User, UserData> {
 
   template(): string {
     return`
-      <div> 
+      <div id="${this.elementId ? this.elementId : ''}"> 
         <div class="user-show"></div>
         <div class="user-form"></div>
       </div>

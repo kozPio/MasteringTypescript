@@ -5,12 +5,16 @@ import { Collection } from '../models/Collection';
 
 export abstract class CollectionView<T, K> {
 
-  collection: Collection<T, K>;
+  
+
+  constructor(public parent: Element, public collection: Collection<T,K>, public elementId?: string) {
+  }
+
 
   render(): void {
 
   }
 
 
-  abstract renderItem(model: T, parentItem: Element): void;
+  abstract renderItem(Model: T, itemParent: Element): void;
 }

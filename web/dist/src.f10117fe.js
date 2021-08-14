@@ -2209,7 +2209,28 @@ var User = function (_super) {
 }(Model_1.Model);
 
 exports.User = User;
-},{"./Model":"src/models/Model.ts","./Atributes":"src/models/Atributes.ts","./ApiSync":"src/models/ApiSync.ts","./Eventing":"src/models/Eventing.ts","./Collection":"src/models/Collection.ts"}],"src/views/View.ts":[function(require,module,exports) {
+},{"./Model":"src/models/Model.ts","./Atributes":"src/models/Atributes.ts","./ApiSync":"src/models/ApiSync.ts","./Eventing":"src/models/Eventing.ts","./Collection":"src/models/Collection.ts"}],"src/views/ColectionView.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CollectionView = void 0;
+
+var CollectionView = function () {
+  function CollectionView(parent, collection, elementId) {
+    this.parent = parent;
+    this.collection = collection;
+    this.elementId = elementId;
+  }
+
+  CollectionView.prototype.render = function () {};
+
+  return CollectionView;
+}();
+
+exports.CollectionView = CollectionView;
+},{}],"src/views/View.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2218,9 +2239,10 @@ Object.defineProperty(exports, "__esModule", {
 exports.View = void 0;
 
 var View = function () {
-  function View(parent, model) {
+  function View(parent, model, elementId) {
     this.parent = parent;
     this.model = model;
+    this.elementId = elementId;
     this.regions = {};
     this.bindModel();
   }
@@ -2274,8 +2296,30 @@ var View = function () {
 
   View.prototype.onRender = function () {};
 
-  View.prototype.render = function () {
+  View.prototype.render = function (id) {
     this.parent.innerHTML = '';
+
+    if (id) {
+      var idx = document.getElementById(id);
+      var templateElement = document.createElement('template');
+      templateElement.innerHTML = this.template();
+      this.bindEvents(templateElement.content);
+      this.mapRegions(templateElement.content);
+      this.onRender();
+      idx.innerHTML = '';
+      idx.append(templateElement.content);
+      this.onRender();
+    } else {
+      var templateElement = document.createElement('template');
+      templateElement.innerHTML = this.template();
+      this.bindEvents(templateElement.content);
+      this.mapRegions(templateElement.content);
+      this.onRender();
+      this.parent.append(templateElement.content);
+    }
+  };
+
+  View.prototype.renderUser = function () {
     var templateElement = document.createElement('template');
     templateElement.innerHTML = this.template();
     this.bindEvents(templateElement.content);
@@ -2488,14 +2532,85 @@ var UserEdit = function (_super) {
   };
 
   UserEdit.prototype.template = function () {
-    return "\n      <div> \n        <div class=\"user-show\"></div>\n        <div class=\"user-form\"></div>\n      </div>\n    \n    ";
+    return "\n      <div id=\"" + (this.elementId ? this.elementId : '') + "\"> \n        <div class=\"user-show\"></div>\n        <div class=\"user-form\"></div>\n      </div>\n    \n    ";
   };
 
   return UserEdit;
 }(View_1.View);
 
 exports.UserEdit = UserEdit;
-},{"./View":"src/views/View.ts","./UserForm":"src/views/UserForm.ts","./UserShow":"src/views/UserShow.ts"}],"src/index.ts":[function(require,module,exports) {
+},{"./View":"src/views/View.ts","./UserForm":"src/views/UserForm.ts","./UserShow":"src/views/UserShow.ts"}],"src/views/UserList.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.UserList = void 0;
+
+var ColectionView_1 = require("./ColectionView");
+
+var UserEdit_1 = require("./UserEdit");
+
+var UserList = function (_super) {
+  __extends(UserList, _super);
+
+  function UserList(parent, collection) {
+    var _this = _super.call(this, parent, collection) || this;
+
+    _this.parent = parent;
+    _this.collection = collection;
+    return _this;
+  }
+
+  UserList.prototype.render = function () {
+    var _this = this;
+
+    this.collection.fetch();
+    this.collection.on('change', function () {
+      for (var i = 0; i < _this.collection.models.length; i++) {
+        _this.renderItem(_this.collection.models[i], _this.parent);
+      }
+    });
+  };
+
+  UserList.prototype.renderItem = function (model, itemParent) {
+    var userEdit = new UserEdit_1.UserEdit(itemParent, model, model.get('name'));
+    userEdit.renderUser();
+  };
+
+  return UserList;
+}(ColectionView_1.CollectionView);
+
+exports.UserList = UserList;
+},{"./ColectionView":"src/views/ColectionView.ts","./UserEdit":"src/views/UserEdit.ts"}],"src/index.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2504,18 +2619,16 @@ Object.defineProperty(exports, "__esModule", {
 
 var User_1 = require("./models/User");
 
-var UserEdit_1 = require("./views/UserEdit");
+var UserList_1 = require("./views/UserList");
 
-var user = User_1.User.buildUser({
-  name: 'Adam',
-  age: 20
-});
 var root = document.getElementById('root');
+var collection = User_1.User.buildUserCollection();
 
 if (root) {
-  var userEdit = new UserEdit_1.UserEdit(root, user);
-  userEdit.render();
-  console.log(userEdit);
+  //const userEdit = new UserEdit(root , user);
+  var userList = new UserList_1.UserList(root, collection);
+  userList.render(); //userEdit.render();
+  //console.log(userEdit)
 } else {
   throw new Error('Root element not found');
 } // const user = new User({name: 'John', age: 20});
@@ -2530,7 +2643,7 @@ if (root) {
 //   console.log('save was triggered')
 // });
 // user.trigger('asd');
-},{"./models/User":"src/models/User.ts","./views/UserEdit":"src/views/UserEdit.ts"}],"C:/Users/pitrx/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./models/User":"src/models/User.ts","./views/UserList":"src/views/UserList.ts"}],"C:/Users/pitrx/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -2558,7 +2671,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52522" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65499" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
