@@ -8,7 +8,7 @@ import { Collection } from './Collection';
 
 export interface UserData {
   id?: number;
-  name?: String;
+  name?: string;
   age?: number
   
 }

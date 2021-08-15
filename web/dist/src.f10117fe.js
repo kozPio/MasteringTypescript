@@ -2244,7 +2244,7 @@ var View = function () {
     this.model = model;
     this.elementId = elementId;
     this.regions = {};
-    this.bindModel();
+    this.bindModel(elementId);
   }
 
   View.prototype.regionsMap = function () {
@@ -2255,11 +2255,11 @@ var View = function () {
     return {};
   };
 
-  View.prototype.bindModel = function () {
+  View.prototype.bindModel = function (elementId) {
     var _this = this;
 
     this.model.on('change', function () {
-      _this.render();
+      _this.render(elementId);
     });
   };
 
@@ -2297,18 +2297,18 @@ var View = function () {
   View.prototype.onRender = function () {};
 
   View.prototype.render = function (id) {
-    this.parent.innerHTML = '';
+    console.log(this.parent.innerHTML);
 
     if (id) {
+      console.log(id);
       var idx = document.getElementById(id);
       var templateElement = document.createElement('template');
       templateElement.innerHTML = this.template();
       this.bindEvents(templateElement.content);
       this.mapRegions(templateElement.content);
-      this.onRender();
       idx.innerHTML = '';
-      idx.append(templateElement.content);
       this.onRender();
+      idx.append(templateElement.content);
     } else {
       var templateElement = document.createElement('template');
       templateElement.innerHTML = this.template();
@@ -2463,7 +2463,7 @@ var UserShow = function (_super) {
   }
 
   UserShow.prototype.template = function () {
-    return "\n    <div>\n      <h1>Form me</h1>\n      <div>User Name: " + this.model.get('name') + "</div>\n      <div>User Age: " + this.model.get('age') + "</div>\n    </div>\n    ";
+    return "\n    <div>\n      <h1>User " + this.model.get('name') + "</h1>\n      <div>User Name: " + this.model.get('name') + "</div>\n      <div>User Age: " + this.model.get('age') + "</div>\n    </div>\n    ";
   };
 
   return UserShow;

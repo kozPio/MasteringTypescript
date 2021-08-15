@@ -7,8 +7,8 @@ export abstract class View<T extends Model<K>, K> {
 
 
 
-  constructor( public parent: Element, public model: T, public elementId?: String){
-    this.bindModel();
+  constructor( public parent: Element, public model: T, public elementId?: string){
+    this.bindModel(elementId);
   }
 
 
@@ -22,9 +22,9 @@ export abstract class View<T extends Model<K>, K> {
     return {};
   }
 
-  bindModel(): void {
+  bindModel(elementId?: string): void {
     this.model.on('change',()=> {
-      this.render();
+      this.render(elementId);
     })
   }
 
@@ -54,23 +54,26 @@ export abstract class View<T extends Model<K>, K> {
   onRender(): void {}
 
   render(id?: string): void {
-    this.parent.innerHTML = '';
+      console.log(this.parent.innerHTML)
+    
     if(id){
+      console.log(id)
       const idx = document.getElementById(id);
       const templateElement = document.createElement('template');
       templateElement.innerHTML = this.template();
 
       this.bindEvents(templateElement.content)
       this.mapRegions(templateElement.content)
+      idx.innerHTML= '';
 
       this.onRender();
 
-      idx.innerHTML= '';
+      
 
       idx.append(templateElement.content)
 
 
-      this.onRender();
+
     }else {
       const templateElement = document.createElement('template');
       templateElement.innerHTML = this.template();
