@@ -9,8 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var routes_1 = require("./decorators/routes");
-var controller_1 = require("./decorators/controller");
+var decorators_1 = require("./decorators");
 var LoginControler = /** @class */ (function () {
     function LoginControler() {
     }
@@ -18,14 +17,32 @@ var LoginControler = /** @class */ (function () {
         res.send("\n      <form method=\"POST\">\n        <div>\n          <label>Email</label>\n          <input name=\"email\"/>\n        </div>\n        <div>\n          <label>Password</label>\n          <input name=\"password\"  type=\"password\" />\n        </div>\n        <button>Submit</button>\n      </form>\n    ");
     };
     ;
+    LoginControler.prototype.postLogin = function (req, res) {
+        var _a = req.body, email = _a.email, password = _a.password;
+        if (email && password && email === 'em1' && password === 'pas1') {
+            req.session = { loggedIn: true };
+            res.redirect('/');
+        }
+        else {
+            res.send('Invalid an email or password');
+        }
+    };
+    ;
     __decorate([
-        routes_1.get('login'),
+        decorators_1.get('/login'),
         __metadata("design:type", Function),
         __metadata("design:paramtypes", [Object, Object]),
         __metadata("design:returntype", void 0)
     ], LoginControler.prototype, "getLogin", null);
+    __decorate([
+        decorators_1.post('/login'),
+        decorators_1.bodyValidaor('email', 'password'),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", [Object, Object]),
+        __metadata("design:returntype", void 0)
+    ], LoginControler.prototype, "postLogin", null);
     LoginControler = __decorate([
-        controller_1.controller('/')
+        decorators_1.controller('/auth')
     ], LoginControler);
     return LoginControler;
 }());

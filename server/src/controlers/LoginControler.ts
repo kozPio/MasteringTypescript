@@ -1,10 +1,12 @@
-import {Router, Request, Response, NextFunction} from 'express';
-import {get} from './decorators/routes'
-import { controller } from './decorators/controller';
+import { NextFunction, Request, Response} from 'express';
+import {get, controller, bodyValidaor, post} from './decorators';
 
-@controller('/')
+
+
+
+@controller('/auth')
 class LoginControler {
-  @get('login')
+  @get('/login')
   getLogin(req: Request, res: Response): void{
     res.send(`
       <form method="POST">
@@ -21,4 +23,20 @@ class LoginControler {
     `)
   };
 
+  @post('/login')
+  @bodyValidaor('email', 'password')
+  postLogin(req: Request, res: Response){
+    const {email, password} = req.body;
+  
+  
+  if(email && password && email === 'em1' && password === 'pas1'){
+    req.session = { loggedIn: true}
+    res.redirect('/');
+    
+  }else {
+    res.send('Invalid an email or password')
+  }
+  
+  };
 }
+
