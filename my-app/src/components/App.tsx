@@ -1,41 +1,45 @@
 import React from "react";
-import  ReactDOM  from "react-dom";
+
+import { connect } from 'react-redux';
+import { Todo, fetchTodos} from '../actions';
+import {StoreState} from '../reducers';
 
 
 interface AppProps {
-  color?: string;
+  todos: Todo[];
+  fetchTodos(): any;
 }
 
-interface AppState {
-  counter: number;
-}
+ class _App extends React.Component<AppProps> {
+   
+  onButtonClick = () : void => {
+    this.props.fetchTodos();
+  };
 
 
-export class App extends React.Component<AppProps, AppState> {
-
-  
-
-  constructor(props: AppProps) {
-    super(props)
-
-    this.state = {counter: 0};
+  renderList(): JSX.Element[] {
+    return this.props.todos.map((todo: Todo) => {
+      return <div key={todo.id} >{todo.title}</div>
+    })
   }
 
-  onIncrement =(): void => {
-    this.setState({counter: this.state.counter+1});
-  }
-
-  onDecrement =(): void => {
-    this.setState({counter: this.state.counter-1});
-  }
-
-  render() {
-    return (
+  render() { 
+      return (
       <div>
-        <button onClick={this.onIncrement}>Incremant</button>
-        <button onClick={this.onDecrement}>Decrement</button>
-        {this.state.counter}
-      </div>
-    )
+        <button onClick={this.onButtonClick}>Fetch</button> Hi there
+        {this.renderList()}
+        </div>
+      )
+      
+    
   }
 }
+
+const mapStateToProps = ({todos}: StoreState): {todos: Todo[]} => {
+  return {todos};
+};
+
+export const App =  connect(
+  mapStateToProps,
+  { fetchTodos}
+)(_App);
