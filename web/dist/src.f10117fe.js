@@ -2610,8 +2610,70 @@ var UserList = function (_super) {
 }(ColectionView_1.CollectionView);
 
 exports.UserList = UserList;
-},{"./ColectionView":"src/views/ColectionView.ts","./UserEdit":"src/views/UserEdit.ts"}],"src/index.ts":[function(require,module,exports) {
+},{"./ColectionView":"src/views/ColectionView.ts","./UserEdit":"src/views/UserEdit.ts"}],"src/views/App.ts":[function(require,module,exports) {
 "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.App = void 0;
+var root = document.getElementById('root');
+
+var App = function () {
+  function App() {}
+
+  App.render = function () {
+    var templateElement = document.createElement('template');
+    templateElement.innerHTML = "\n    <div id=\"App\" className=\"App\">\n        <button router-link=\"/\">Home</button>\n        <button router-link=\"/about\">About</button>\n        <button router-link=\"/contact\">Contact</button>\n        <button router-link=\"/unknown\">Error</button>\n    </div>";
+    root.append(templateElement.content);
+  };
+
+  return App;
+}();
+
+exports.App = App;
+},{}],"src/router/routes.ts":[function(require,module,exports) {
+"use strict"; //router instance
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var Router = function () {
+  function Router(name, routes) {
+    this.name = name;
+    this.routes = routes;
+  }
+
+  Router.prototype.start = function () {
+    return {
+      name: this.name,
+      routes: this.routes
+    };
+  };
+
+  return Router;
+}();
+
+var routerInstance = new Router('routerInstance', [{
+  path: "/",
+  name: "Root"
+}, {
+  path: '/about',
+  name: "About"
+}, {
+  path: '/contact',
+  name: "Contact"
+}]);
+exports.default = routerInstance;
+},{}],"src/index.ts":[function(require,module,exports) {
+"use strict";
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -2621,16 +2683,65 @@ var User_1 = require("./models/User");
 
 var UserList_1 = require("./views/UserList");
 
+var App_1 = require("./views/App");
+
+var routes_1 = __importDefault(require("./router/routes"));
+
 var root = document.getElementById('root');
+App_1.App.render();
+var app = document.getElementById('App');
 var collection = User_1.User.buildUserCollection();
 
-if (root) {
+if (app) {
   //const userEdit = new UserEdit(root , user);
-  var userList = new UserList_1.UserList(root, collection);
+  var userList = new UserList_1.UserList(app, collection);
   userList.render(); //userEdit.render();
   //console.log(userEdit)
 } else {
   throw new Error('Root element not found');
+} //get root div for rendering
+//create the route instance
+//get all router links
+
+
+var definedRoutes = Array.from(document.querySelectorAll('[router-link]')); // method to navigate
+
+var navigate = function navigate(e) {
+  var route = e.target.attributes[0].value; // redirect to the router instance
+
+  var routeInfo = routes_1.default.routes.filter(function (r) {
+    return r.path === route;
+  })[0];
+
+  if (!routeInfo) {
+    window.history.pushState({}, '', 'error');
+    app.innerHTML = "This route is not Defined";
+  } else {
+    window.history.pushState({}, '', routeInfo.path);
+    app.innerHTML = "You are on the " + routeInfo.name + " path";
+  }
+}; //iterate over all defined routes
+
+
+definedRoutes.forEach(function (route) {
+  route.addEventListener('click', navigate, false);
+}); // get current path
+
+var currentPath = window.location.pathname;
+
+if (currentPath === '/') {
+  app.innerHTML = 'You are on Home page';
+} else {
+  // check if route exist in the router instance 
+  var route = routes_1.default.routes.filter(function (r) {
+    return r.path === currentPath;
+  })[0];
+
+  if (route) {
+    app.innerHTML = "You are on the " + route.name + " path";
+  } else {
+    app.innerHTML = "This route is not Defined";
+  }
 } // const user = new User({name: 'John', age: 20});
 // user.set({ name: 'Adrian'})
 // user.on('change', () => {
@@ -2643,7 +2754,7 @@ if (root) {
 //   console.log('save was triggered')
 // });
 // user.trigger('asd');
-},{"./models/User":"src/models/User.ts","./views/UserList":"src/views/UserList.ts"}],"C:/Users/pitrx/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./models/User":"src/models/User.ts","./views/UserList":"src/views/UserList.ts","./views/App":"src/views/App.ts","./router/routes":"src/router/routes.ts"}],"C:/Users/pitrx/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -2671,7 +2782,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58724" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63408" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
